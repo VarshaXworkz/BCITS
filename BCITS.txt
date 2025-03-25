@@ -1,0 +1,698 @@
+SQL
+1)Create database Employees;
+Create table Employee where EmpID int(27)PRIMARY KEY,Name varchar(30) NOT NULL,Age int(30),JoiningDate(LocalDate);
+Alter table Employee;
+ ADD column Salary(Double(30)) from Employee where id = 1; 
+ 
+ 2)Create database Tempdata;
+ Create table TempData ;
+ Drop table TempData;
+ 
+ 3)CREATE database Product;
+ CREATE Table Product_table where ProductID int(20) PRIMARY KEY,ProductName VARCHAR(255) NOT NULL,Price DECIMAL(10, 2) CHECK (Price > 0);
+
+4)Rename an existing table OldOrders to ArchievedOrders.write an SQL Query for this.
+Alter Table OldOrders
+rename TO ArchievedOrders;
+
+5)Create an index on the column Category of a table named Inventory.Write SQL query.
+CREATE index index_category ON Inventory(Category);
+
+6)insert the following data into the student table:StudentID = 101,Name='Alice',Age=20,Grade= 'A'.Write SQL query.
+Insert into Student (StudentID, Name, Age, Grade) Values (101, 'Alice', 20, 'A');
+
+7)Update the grade to 'B' for all students who scored less than 60 marks in the Marks column of the results table.Write SQL query.
+Update Results Set Grade = 'B' WHERE Marks < 60;
+
+8)Delete all records from the Orders table where the status is 'Cancelled'.Write SQL query.
+Delete from Orders where  status = 'Cancelled';
+
+9)Merge data from Table A into Table B .If a record exists in both the tables with the same ID,update Table B's value column; if not, insert the record into Table B.Write SQL query.
+MERGE INTO TableB AS Target USING TableA AS Source ON Target.ID = Source.ID
+WHEN MATCHED THEN
+    UPDATE SET Target.Value = Source.Value
+WHEN NOT MATCHED THEN
+    INSERT (ID, Value)
+    VALUES (Source.ID, Source.Value);
+	
+10)You have a CSV file named employees.csv .write the sql query . 
+LOAD DATA INFILE 'employees.csv'
+INTO TABLE Employee
+FIELDS TERMINATED BY ',' 
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(StudentID, Name, JoinDate, OtherColumns);
+);
+
+11)Retreive the names of all employees in the Employee table who joined after 2020-01-01.Write SQL query.
+SELECT Name
+FROM Employee
+WHERE JoinDate > '2020-01-01';
+
+12)Find the average,minimum,and maximum salary of employees in the Employee table.Write SQL query.
+SELECT 
+    AVG(Salary) AS AverageSalary,
+    MIN(Salary) AS MinimumSalary,
+    MAX(Salary) AS MaximumSalary
+FROM Employee;
+
+
+13)Retrieve all orders from Orders table where the OrderAmount is greater than 1000 and Status is 'Delivered'.Write SQL query.
+SELECT *
+FROM Orders
+WHERE OrderAmount > 1000
+  AND Status = 'Delivered';
+
+14)List the total number of products sold per category from Sales Table.
+SELECT Category, SUM(Quantity) AS TotalProductsSold
+FROM Sales
+GROUP BY Category;
+
+15)Retrieve the names and order details of customers who placed orders,using the Customers and Orders tables.Write SQL query.
+SELECT Customers.Name, Orders.OrderID, Orders.OrderDate, Orders.OrderAmount
+FROM Customers
+JOIN Orders
+ON Customers.CustomerID = Orders.CustomerID;
+
+16)Write a query to find the names of customers and their respective order details using the Customers and Orders tables
+SELECT Customers.Name, Orders.OrderID, Orders.OrderDate, Orders.OrderAmount
+FROM Customers
+INNER JOIN Orders
+ON Customers.CustomerID = Orders.CustomerID;
+
+17)Retrieve all customers and their orders,including those without anu orders.Use Customers and Orders tables.Write SQL query.
+SELECT 
+    Customers.CustomerID,
+    Customers.CustomerName,
+    Orders.OrderID,
+    Orders.OrderDate
+FROM 
+    Customers
+LEFT JOIN 
+    Orders
+ON 
+    Customers.CustomerID = Orders.CustomerID;
+
+18)Write a query to retrieve the names of employees whose salary is greater than the average salary of Employee table.
+SELECT 
+    EmployeeName
+FROM 
+    Employee
+WHERE 
+    Salary > (SELECT AVG(Salary) FROM Employee);
+
+
+19)write a query to retrieve orders from the Orders table where the order amount exceeds the average amount for the respective customer.
+
+SELECT 
+    O.OrderID,
+    O.CustomerID,
+    O.OrderAmount
+FROM 
+    Orders O
+WHERE 
+    O.OrderAmount > (
+        SELECT 
+            AVG(O1.OrderAmount)
+        FROM 
+            Orders O1
+        WHERE 
+            O1.CustomerID = O.CustomerID
+    );
+
+
+20)write a query to retrive the names of customers ,their orders,and the products in those orders.Use Customers,Orders and Products tables
+SELECT 
+    C.CustomerName,
+    O.OrderID,
+    P.ProductName
+FROM 
+    Customers C
+INNER JOIN 
+    Orders O
+ON 
+    C.CustomerID = O.CustomerID
+INNER JOIN 
+    Products P
+ON 
+    O.ProductID = P.ProductID;
+
+21)write a transaction that inserts a record into the Accounts table and updates the balance column in the transactions table .Roll back the transaction if the balance update fails.
+BEGIN TRANSACTION;
+INSERT INTO Accounts (AccountID, AccountName, AccountType)
+VALUES (101, 'John Doe', 'Savings');
+
+UPDATE Transactions
+SET Balance = Balance + 1000
+WHERE AccountID = 101;
+
+IF @@ERROR <> 0
+BEGIN
+    ROLLBACK TRANSACTION;
+    PRINT 'Transaction failed. Changes have been rolled back.';
+END
+ELSE
+BEGIN
+    COMMIT TRANSACTION;
+    PRINT 'Transaction succeeded.';
+END;
+
+22)write a transaction that includes multiple steps.use SAVEPOINT to mark a point and roll back to it if a step fails.Use the inventory table for operations.
+BEGIN TRANSACTION;
+UPDATE Inventory
+SET Quantity = Quantity - 10
+WHERE ProductID = 1;
+
+SAVEPOINT Step1;
+
+UPDATE Inventory
+SET Quantity = Quantity + 15
+WHERE ProductID = 2;
+
+INSERT INTO InventoryLogs (LogID, ProductID, Adjustment, Timestamp)
+VALUES (1001, 1, -10, GETDATE());
+
+23)explain and write the query to lock the Employee table for updates but allow other operations like SELECT
+BEGIN TRANSACTION;
+
+SELECT *
+FROM Employee
+WITH (TABLOCK, HOLDLOCK);
+
+COMMIT TRANSACTION;
+
+24)write the SQL query to set the isolation level to SERIALIZABLE for a transaction.Explain its significance.
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+BEGIN TRANSACTION;
+COMMIT TRANSACTION;
+
+25)write a transaction that explicitly releases locks after execution.use the orders table for operations.
+
+BEGIN TRANSACTION;
+
+UPDATE Orders
+SET OrderStatus = 'Completed'
+WHERE OrderID = 101;
+
+INSERT INTO Orders (OrderID, CustomerID, OrderAmount, OrderDate, OrderStatus)
+VALUES (102, 1, 500, '2025-03-25', 'Pending');
+
+COMMIT TRANSACTION;
+
+26)What is ORM?Explain architecture of Hibernate ORM.
+Object Relational Mapping (ORM) is a programming technique that helps developers interact with a database using 
+object-oriented programming languages like Java, Python, or C#. 
+Instead of writing raw SQL queries, ORM frameworks map database tables to classes and columns to attributes, enabling 
+developers to work with objects rather than database rows.
+
+The architecture of ORM includes 
+Configuration:
+Hibernate requires configuration files such as hibernate.cfg.xml or hibernate.properties.
+These files contain database connection details, Hibernate settings, and mappings of Java classes to database tables.
+
+SessionFactory:
+The SessionFactory is a factory for Session objects. It is initialized once per application and is thread-safe.
+It reads the configuration and creates Session objects to interact with the database.
+
+Session:
+A Session is used to perform CRUD (Create, Read, Update, Delete) operations on the database.
+It acts as a connection to the database and is not thread-safe.
+
+Transaction:
+Hibernate provides transaction management APIs for handling database transactions.
+Transactions ensure consistency and integrity of database operations.
+
+Query and Criteria API:
+Hibernate supports HQL (Hibernate Query Language), which is similar to SQL but operates on objects.
+The Criteria API is used for building queries dynamically in an object-oriented manner.
+
+Mapping:
+Hibernate maps Java classes to database tables using XML files or annotations.
+Each attribute of the class corresponds to a column in the table.
+
+Workflow:
+The application starts by loading the configuration file.
+The SessionFactory is initialized based on the configuration.
+A Session is created for performing database operations.
+Transactions are managed to ensure data integrity.
+Queries are executed using HQL or Criteria API, and results are returned as objects.
+Hibernate translates these operations into SQL and communicates with the database.
+
+27)What are the main components of JPA?
+a)Entity
+b)EntityManager
+c)Session 
+d)SessionFactory
+e)EntityManagerFactory
+
+29)What is JPQL?
+A java programming query language is a query language used in the Java Persistence API (JPA) 
+to interact with a relational database in an object-oriented manner. Unlike SQL, which operates
+directly on tables and columns, JPQL works with JPA entity objects and their attributes, allowing
+developers to write queries at a higher abstraction level.
+
+30)write a JPA query to fetch the minimum price of the product.
+@Query("SELECT MIN(p.price) FROM Product p")
+Double findMinimumProductPrice();
+
+31)write a code to connect java applications and database using JDBC.
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class JDBCProject {
+    public static void main(String[] args) {
+      
+        String url = "jdbc:mysql://localhost:3306/JDBC_project"; 
+        String username = "root"; 
+        String password = "8310120526"; 
+
+        Connection connection = null;
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            connection = DriverManager.getConnection(url, username, password);
+
+            if (connection != null) {
+                System.out.println("Connected to the database successfully!");
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println("JDBC Driver not found!");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println("Failed to connect to the database!");
+            e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                    System.out.println("Database connection closed.");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+33)a)Polymorphism:Polymorphism is the ability of an object to behave differently at given instances of time.
+
+Example:A java example for Polymorphism
+class Animal {
+    public void sound() {
+        System.out.println("This is a generic animal sound.");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    public void sound() {
+        System.out.println("The dog barks.");
+    }
+}
+
+class Cat extends Animal {
+    @Override
+    public void sound() {
+        System.out.println("The cat meows.");
+    }
+}
+
+class Calculator {
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public double add(double a, double b) {
+        return a + b;
+    }
+}
+
+b)Encapsulation:The process of binding variables and methods to form a single unit is known as encapsulation.
+Eg:
+public class Person {
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        if (age > 0) { 
+            this.age = age;
+        } else {
+            System.out.println("Age must be positive!");
+        }
+    }
+}
+
+public class EncapsulationDemo {
+    public static void main(String[] args) {
+        Person person = new Person();
+
+        person.setName("Alice");
+        person.setAge(25);
+
+        System.out.println("Name: " + person.getName());
+        System.out.println("Age: " + person.getAge());
+
+        person.setAge(-5); 
+    }
+}
+
+
+c)Inheritance:The process of acquiring the characteristics from one method to another that maybe from parent class to child class or from super class to subclass
+is known as inheritance.
+
+Example:A java example for Inheritance
+
+class Animal {
+    public void eat() {
+        System.out.println("This animal eats food.");
+    }
+}
+
+class Dog extends Animal {
+    public void bark() {
+        System.out.println("The dog barks.");
+    }
+}
+
+public class InheritanceDemo {
+    public static void main(String[] args) {
+        Dog dog = new Dog();
+
+        dog.eat();
+        dog.bark();
+    }
+}
+
+d)Abstraction:The process of hiding the implementations and showing only ther necessary data is known as abstraction.
+Example:A java example for Abstraction
+abstract class Vehicle {
+    public abstract void start();
+
+    public void stop() {
+        System.out.println("The vehicle has stopped.");
+    }
+}
+
+class Car extends Vehicle {
+    @Override
+    public void start() {
+        System.out.println("The car starts with a key.");
+    }
+}
+
+public class AbstractionDemo {
+    public static void main(String[] args) {
+        Vehicle myCar = new Car();
+
+        myCar.start();
+        myCar.stop();
+    }
+}
+
+34)Difference between 
+a)equals() and ==
+
+The equals() method compares the content or value of objects to determine equality, whereas the == operator compares references or memory addresses for objects and value equality for primitive types.
+b)final,finally and finalize
+
+The final keyword is used to define constants or prevent modification and inheritance for classes and methods. The finally block in exception handling ensures that cleanup code is always executed. The finalize() method, part of the Object class, is called by the garbage collector before an object is removed from memory, but it is rarely used in modern Java.
+c)Implemends and extends
+
+The implements keyword is used to implement interfaces, allowing a class to use multiple interfaces. The extends keyword is used for inheritance, where a class or interface inherits properties and behaviors from a single parent class or interface.
+d)Checked and unchecked exceptions
+
+Checked exceptions are those that must be handled during compile-time, such as IOException and SQLException. Unchecked exceptions occur at runtime and do not need to be explicitly handled, such as NullPointerException and ArrayIndexOutOfBoundsException.
+e)Methods and Constructors
+
+Methods define actions or behaviors and can have any name, a return type, and are invoked explicitly. Constructors are used to initialize objects, have the same name as the class, no return type, and are automatically invoked during object creation.
+f)TreeMap,HashMap, and LinkedHashMap
+
+A TreeMap sorts keys in natural order or using a comparator. A HashMap does not maintain any order and provides fast operations. A LinkedHashMap maintains insertion order and performs slightly slower than HashMap due to order tracking.
+g)@EnableWebMvc and @Configuration
+
+The @EnableWebMvc annotation enables Spring MVC features, setting up the DispatcherServlet and default configurations for web applications. The @Configuration annotation marks a class as a configuration source, allowing the definition of application-level beans and settings.
+
+35)Error :Condition Unspecified
+
+36)a=0 b=0.0f
+
+37)Hello from Outer
+   Hello from Outer
+   
+38)true
+
+39)Java Programming
+
+40)true
+
+41)2 4
+
+42){100,2,3}
+
+43)Yes
+
+44)
+
+45)It will lead to conflict and spring will throw an exception
+
+47)a simple API to fetch the details by email
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
+public class User {
+    @Id
+    private String email;
+    private String name;
+    private int age;
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+
+48)Write a program to convert List to Set and vice versa.
+import java.util.*;
+
+public class ListToSetConversion {
+    public static void main(String[] args) {
+        
+        List<String> list = new ArrayList<>();
+        list.add("Apple");
+        list.add("Banana");
+        list.add("Apple"); 
+        list.add("Cherry");
+
+        System.out.println("Original List: " + list);
+
+        Set<String> set = new HashSet<>(list);
+        System.out.println("Converted Set: " + set);
+
+        List<String> convertedList = new ArrayList<>(set);
+        System.out.println("Converted List: " + convertedList);
+    }
+}
+
+50)public class NumberPattern {
+    public static void main(String[] args) {
+        int n = 5; 
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= i; j++) {
+                System.out.print(j);
+            }
+            System.out.println();
+        }
+
+        for (int i = n - 1; i >= 1; i--) {
+            for (int j = 1; j <= i; j++) {
+                System.out.print(j);
+            }
+            System.out.println();
+        }
+    }
+}
+
+51)public class Substrings {
+    public static void main(String[] args) {
+        String input = "abc";
+        
+        System.out.println("Input: " + input);
+        System.out.println("All Substrings:");
+
+        for (int i = 0; i < input.length(); i++) {
+            for (int j = i + 1;
+			j <= input.length(); j++) {
+                System.out.println(input.substring(i, j));
+            }
+        }
+    }
+}
+
+52)import java.util.*;
+
+    public class TreeMapExample {
+    public static void main(String[] args) {
+        TreeMap<Integer, String> treeMap = new TreeMap<>();
+        treeMap.put(1, "Apple");
+        treeMap.put(3, "Banana");
+        treeMap.put(5, "Cherry");
+        treeMap.put(7, "Date");
+        treeMap.put(9, "Elderberry");
+
+        Map.Entry<Integer, String> firstEntry = treeMap.firstEntry();
+        System.out.println("First Entry: " + firstEntry);
+
+        Map.Entry<Integer, String> lastEntry = treeMap.lastEntry();
+        System.out.println("Last Entry: " + lastEntry);
+    }
+}
+
+53)
+
+54)what is dispatcher servlet?
+The DispatcherServlet is a core component of the Spring Framework in Java. 
+It acts as the front controller in a Spring MVC web application.Its primary role is to handle incoming
+HTTP requests and dispatch them to the appropriate handlers, such as controllers, views, or other components.
+
+56)Explain the below:
+a.@Configuration:The @Configuration annotation in Spring is used to mark a class as a source of Spring Bean definitions.
+b.@Bean:The @Bean annotation is used within a @Configuration class to define and register a bean in the Spring application context. These beans are managed by Spring, and their lifecycle is handled by the framework.
+c.Dependency Injection:Dependency Injection is a design pattern where an object receives its dependencies from an external source (rather than creating them itself). In Spring, the framework automatically injects the required dependencies 
+into components, promoting loose coupling and better testability. 
+DI can be achieved through constructor injection, setter injection, or field injection.
+d.IOC:IoC is a principle that shifts control of object creation and management from the 
+application code to the framework. In Spring, the IoC container manages the lifecycle of beans, 
+resolves dependencies, and ensures that objects are available to the application when needed.
+ IoC is the foundation on which Spring is built, and it enables Dependency Injection.
+ 
+57)
+public class PrintNumbers {
+    public static void printNumbers(int n) {
+        if (n > 100) { 
+            return;
+        }
+        System.out.println(n);
+        printNumbers(n + 1); 
+    }
+
+    public static void main(String[] args) {
+        printNumbers(1); 
+    }
+}
+
+58)<!DOCTYPE html>
+<html>
+<head>
+    <title>Toggle Div Visibility</title>
+    <style>
+        #myDiv {
+            width: 200px;
+            height: 100px;
+            background-color: lightblue;
+            display: block; 
+            text-align: center;
+            line-height: 100px;
+        }
+    </style>
+    <script>
+        function toggleVisibility() {
+            const div = document.getElementById('myDiv');
+            if (div.style.display === 'none') {
+                div.style.display = 'block';
+            } else {
+                div.style.display = 'none';
+            }
+        }
+    </script>
+</head>
+<body>
+    <button onclick="toggleVisibility()">Toggle Visibility</button>
+    <div id="myDiv">Hello! I'm a Div</div>
+</body>
+</html>
+
+
+59)write a JSP page that iterates over a list of names using JSTL.
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Iterate Over Names</title>
+</head>
+<body>
+    <h1>Names List</h1>
+    <ul>
+       
+        <c:forEach var="name" items="${names}">
+            <li>${name}</li>
+        </c:forEach>
+    </ul>
+</body>
+</html>
+
+List<String> names = Arrays.asList("Alice", "Bob", "Charlie", "Diana");
+request.setAttribute("names", names);
+request.getRequestDispatcher("names.jsp").forward(request, response);
+
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>jstl</artifactId>
+    <version>1.2</version>
+</dependency>
+
+60)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change Background Color</title>
+    <script>
+        function changeBackgroundColor(color) {
+            document.body.style.backgroundColor = color;
+        }
+    </script>
+</head>
+<body>
+    <button onclick="changeBackgroundColor('lightblue')">Light Blue</button>
+    <button onclick="changeBackgroundColor('lightgreen')">Light Green</button>
+    <button onclick="changeBackgroundColor('lightcoral')">Light Coral</button>
+</body>
+</html>
+
+
+
+
+
